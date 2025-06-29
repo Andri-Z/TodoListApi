@@ -1,11 +1,12 @@
-﻿namespace TodoListApi.Models
+﻿using TodoListApi.Models;
+
+namespace TodoListApi.DTOs
 {
-    public class Tasks
+    public class TasksDTOs
     {
-        public int id { get; set; }
         public string title { get; set; } = string.Empty;
         public string descripcion { get; set; } = string.Empty;
-        public Status status { get;set; }
+        public Status status { get; set; }
     }
     public enum Status
     {

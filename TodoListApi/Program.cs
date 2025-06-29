@@ -4,13 +4,12 @@ using TodoListApi.Context;
 using TodoListApi.Interface;
 using TodoListApi.Services;
 using Serilog;
+using Serilog.Events;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -20,7 +19,13 @@ builder.Services.AddScoped<ITasks, TasksServices>();
 
 builder.Host.UseSerilog((context, config) =>
 {
-    config.ReadFrom.Configuration(context.Configuration);
+    config.ReadFrom.Configuration(context.Configuration)
+          .Filter.ByExcluding(LogEvent=> LogEvent.Exception !=null);
+});
+
+builder.Services.Configure<ApiBehaviorOptions>(options =>
+{
+    options.SuppressModelStateInvalidFilter = true;
 });
 
 var app = builder.Build();
