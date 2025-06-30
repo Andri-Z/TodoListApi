@@ -20,7 +20,7 @@ builder.Services.AddScoped<ITasks, TasksServices>();
 builder.Host.UseSerilog((context, config) =>
 {
     config.ReadFrom.Configuration(context.Configuration)
-          .Filter.ByExcluding(LogEvent=> LogEvent.Exception !=null);
+          .Filter.ByExcluding(LogEvent => LogEvent.Exception != null);
 });
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>

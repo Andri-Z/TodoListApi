@@ -8,10 +8,4 @@ namespace TodoListApi.DTOs
         public string descripcion { get; set; } = string.Empty;
         public Status status { get; set; }
     }
-    public enum Status
-    {
-        Completada,
-        EnProceso,
-        Pendiente
-    }
 }

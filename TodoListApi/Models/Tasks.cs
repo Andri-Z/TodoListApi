@@ -9,8 +9,8 @@
     }
     public enum Status
     {
-        Completada,
-        EnProceso,
-        Pendiente
+        Pendiente = 1,
+        EnProceso = 2,
+        Completada = 3,
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Serilog.Events;
+using System.Reflection.Metadata.Ecma335;
 using TodoListApi.DTOs;
 using TodoListApi.Interface;
 using TodoListApi.Models;
@@ -88,11 +89,19 @@ namespace TodoListApi.Controllers
             _logger.LogInformation($"Tarea con id: {id} ha sido eliminada");
             return Ok(new { mensaje = "Tarea eliminada satisfactoriamente." });
         }
-        [HttpPatch("{id}")]
-        public async Task<ActionResult<Tasks>> UpdateTask(TasksDTOs task)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Tasks>> UpdateTask(int id, TasksDTOs task)
         {
-            _logger.LogInformation("Solicitando actualizar tarea.");
-            return await _services.UpdateTaskAsync(task);
+            _logger.LogInformation($"Solicitando actualizar tarea con id:{id}.");
+
+            var result = await _services.UpdateTaskAsync(id, task);
+            if (result == null)
+            {
+                return NotFound(new { mensaje = "La tarea con id: {id} no existe en la base de datos." });
+            }
+
+            _logger.LogInformation("Mostrando tarea actualizada.");
+            return Ok(result);
         }
     }
 }

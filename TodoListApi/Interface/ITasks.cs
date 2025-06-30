@@ -8,7 +8,7 @@ namespace TodoListApi.Interface
         Task<List<Tasks>> GetTaskAsync();
         Task<Tasks?> GetTasksByIdAsync(int id);
         Task<Tasks> CreateTaskAsync(TasksDTOs task);
-        Task<Tasks> UpdateTaskAsync(TasksDTOs task);
+        Task<Tasks?> UpdateTaskAsync(int id, TasksDTOs task);
         Task<bool> DeleteTaskAsync(int id);
     }
 }

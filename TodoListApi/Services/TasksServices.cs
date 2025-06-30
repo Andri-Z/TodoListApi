@@ -102,23 +102,26 @@ namespace TodoListApi.Services
                 return false;
             }
         }
-        public async Task<Tasks> UpdateTaskAsync(TasksDTOs task)
+        public async Task<Tasks?> UpdateTaskAsync(int id, TasksDTOs task)
         {
             _logger.LogInformation("Comprobando que la tarea exista.");
 
             var newTask = new Tasks
             {
+                id = id,
                 title = task.title,
-                descripcion = task.descripcion
+                descripcion = task.descripcion,
+                status = task.status
             };
 
-            var result = await _context.Tasks.FindAsync(newTask.id);
+            var result = await _context.Tasks.FindAsync(id);
             if (result == null)
             {
-                return new Tasks();
+                _logger.LogWarning($"El usuario con id: {id} no existe en la base de datos.");
+                return null;
             }
             
-            _logger.LogInformation("Actualizando tarea.");
+            _logger.LogInformation("Actualizando tarea...");
 
             _context.Tasks.Update(newTask);
             await _context.SaveChangesAsync();
