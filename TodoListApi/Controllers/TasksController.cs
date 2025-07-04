@@ -43,7 +43,7 @@ namespace TodoListApi.Controllers
             
             var newTask = await _services.CreateTaskAsync(task);
             
-            return CreatedAtAction(nameof(GetTaskById), new { id = newTask.id }, newTask);
+            return CreatedAtAction(nameof(GetTaskById), new { newTask.id }, newTask);
         }
         [HttpDelete("{id}")]
         public async Task<ActionResult<Tasks>> DeleteTask(int id)
