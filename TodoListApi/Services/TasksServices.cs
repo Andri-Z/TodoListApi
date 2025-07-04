@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.IdentityModel.Tokens;
+using System.Collections.Generic;
 using System.Data.SqlTypes;
 using System.Threading.Tasks;
 using TodoListApi.Context;
@@ -17,17 +18,19 @@ namespace TodoListApi.Services
         private readonly ILogger<TodoListContext> _logger;
         public TasksServices(TodoListContext context, ILogger<TodoListContext> logger) =>
             (_context, _logger) = (context, logger);
-        public async Task<List<Tasks>> GetTaskAsync()
+        public async Task<ApiResponse> GetTaskAsync(int page, int limit)
         {
             try
             {
-                _logger.LogInformation("Obteniendo todas las tareas desde la base de datos...");
+                var result = await _context.Tasks.ToListAsync();
 
-                return await _context.Tasks.ToListAsync();
+                var tasksPerPage = Response(page,limit,result);
+
+                return tasksPerPage;
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error al solicitar a la base de datos: {Mensaje}", ex.Message);
+                _logger.LogError($"Error al solicitar las tareas a la base de datos: {ex.Message}");
                 throw;
             }
         }
@@ -35,22 +38,16 @@ namespace TodoListApi.Services
         {
             try
             {
-                _logger.LogInformation($"Consultando tarea con id: {id} a la base de datos.");
-
                 var task = await _context.Tasks.FindAsync(id);
 
                 if (task == null)
-                {
-                    _logger.LogWarning($"No se encontro la tarea con id: {id}");
                     return null;
-                }
 
-                _logger.LogInformation("Retornando la tarea.");
                 return task;
             }
             catch(Exception ex)
             {
-                _logger.LogError($"Ha ocurrido un error con la tarea {id}, durante la operacion: {ex.Message}");
+                _logger.LogError($"Ha ocurrido un error al consultar tarea con id:{id}.\n Excepcion: {ex.Message}");
                 throw;
             }
         }
@@ -61,73 +58,112 @@ namespace TodoListApi.Services
                 var newTask = new Tasks
                 {
                     title = task.title,
-                    descripcion = task.descripcion
+                    descripcion = task.descripcion,
+                    status = task.status
                 };
-                _logger.LogInformation("Guardando tarea en la base de datos...");
                 
                 _context.Add(newTask);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation($"Tarea creada exitosamente con el id: {newTask.id}.");
                 return newTask;
             }
             catch(Exception ex)
             {
-                _logger.LogError("Ha ocurrido un error al crear la tarea: {Mensaje}",ex.Message);
+                _logger.LogError($"Ha ocurrido un error al crear la tarea:{task}.\n Excepcion:{ex.Message}");
                 throw;
             }
         }
         public async Task<bool> DeleteTaskAsync(int id)
         {
-            _logger.LogInformation("Buscando tarea para confirmar que existe.");
-
             try
             {
                 var task = await GetTasksByIdAsync(id);
                 if(task == null)
-                {
                     return false;
-                }
 
                 _context.Tasks.Remove(task);
                 await _context.SaveChangesAsync();
 
-                _logger.LogInformation($"Tarea con el id:{id} ha sido eliminada.");
                 return true;
-
             }
             catch(Exception ex)
             {
-                _logger.LogError($"Error al eliminar la tarea con el id: {id}, se ha producido la siguiente excepcion: {ex.Message}");
-                return false;
+                _logger.LogError($"Ha ocurrido un error eliminando la tarea:{id}.\n Excepcion: {ex.Message}");
+                throw;
             }
         }
         public async Task<Tasks?> UpdateTaskAsync(int id, TasksDTOs task)
         {
-            _logger.LogInformation("Comprobando que la tarea exista.");
-
-            var newTask = new Tasks
+            try
             {
-                id = id,
-                title = task.title,
-                descripcion = task.descripcion,
-                status = task.status
+                var _status = StatusValid(task.status);
+                var newTask = await _context.Tasks.FindAsync(id);
+
+                if (_status == null || newTask == null)
+                    return null;
+
+                newTask.title = task.title;
+                newTask.descripcion = task.descripcion;
+                newTask.status = _status;
+
+                await _context.SaveChangesAsync();
+
+                return newTask;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ha ocurrido un error actualizando la tarea con el id:{id}.\n Excepcion: {ex.Message}");
+                throw;
+            }
+        }
+        public async Task<Tasks?> UpdateStatusAsync(int id, string status)
+        {
+            try
+            {
+                var _status = StatusValid(status);
+                var task = await _context.Tasks.FindAsync(id);
+
+                if (_status == null || task == null)
+                    return null;
+
+                task.status = _status;
+
+                await _context.SaveChangesAsync();
+                return task;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ha ocurrido un error actualizando el estado de la tarea con el id:{id}.\n Excepcion: {ex.Message}");
+                throw;
+            }
+        }
+        public string? StatusValid(string status)
+        {
+            var _status = status.ToLower().Replace(" ", "");
+
+            if (!Enum.TryParse<Status>(_status, true, out var parsedStatus))
+                return null;
+
+            return _status;
+        }
+        public ApiResponse Response(int page, int limit, List<Tasks> tasks)
+        { 
+            var totalTask = tasks.Count;
+            var totalPages = (int)Math.Ceiling((decimal)totalTask / limit);
+            var tasksPerPage = tasks
+                .Skip((page - 1) * limit)
+                .Take(limit)
+                .ToList();
+
+            var response = new ApiResponse
+            {
+                data = tasksPerPage,
+                page = page,
+                limit = limit,
+                total = totalTask
             };
 
-            var result = await _context.Tasks.FindAsync(id);
-            if (result == null)
-            {
-                _logger.LogWarning($"El usuario con id: {id} no existe en la base de datos.");
-                return null;
-            }
-            
-            _logger.LogInformation("Actualizando tarea...");
-
-            _context.Tasks.Update(newTask);
-            await _context.SaveChangesAsync();
-
-            _logger.LogInformation("Mostrando tarea actualizada.");
-            return newTask;
+            return response;
         }
     }
 }

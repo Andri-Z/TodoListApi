@@ -6,6 +6,6 @@ namespace TodoListApi.DTOs
     {
         public string title { get; set; } = string.Empty;
         public string descripcion { get; set; } = string.Empty;
-        public Status status { get; set; }
+        public string status { get; set; } = string.Empty;
     }
 }
