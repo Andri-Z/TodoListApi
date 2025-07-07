@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using TodoListApi.Models;
+using TodoListApi.Models.Jwt;
 
 namespace TodoListApi.Context
 {

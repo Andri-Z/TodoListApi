@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Serilog.Events;
 using System.Reflection.Metadata.Ecma335;
 using TodoListApi.DTOs;
@@ -9,18 +10,18 @@ namespace TodoListApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize]
     public class TasksController : ControllerBase
     {
         private readonly ITasks _services;
         public TasksController(ITasks services) =>
             (_services) = (services);
-
         [HttpGet]
         public async Task<ActionResult<List<Tasks>>> GetTask(int page, int limit)
         {
             var task = await _services.GetTaskAsync(page,limit);
 
-            if (task == null || task.data.Count == 0)
+            if (task == null || task.Data.Count == 0)
                 return NoContent();
 
             return Ok(task);
@@ -43,7 +44,7 @@ namespace TodoListApi.Controllers
             
             var newTask = await _services.CreateTaskAsync(task);
             
-            return CreatedAtAction(nameof(GetTaskById), new { newTask.id }, newTask);
+            return CreatedAtAction(nameof(GetTaskById), new { newTask.Id }, newTask);
         }
         [HttpDelete("{id}")]
         public async Task<ActionResult<Tasks>> DeleteTask(int id)

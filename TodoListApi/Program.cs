@@ -9,12 +9,31 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Security.Cryptography.Xml;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    var jwtSecurityScheme = new OpenApiSecurityScheme
+    {
+        BearerFormat = "Jwt",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = JwtBearerDefaults.AuthenticationScheme,
+        Description = "Ingresar Token de Acceso JWT",
+        Reference = new OpenApiReference
+        {
+            Id = JwtBearerDefaults.AuthenticationScheme,
+            Type = ReferenceType.SecurityScheme
+        }
+    };
+    options.AddSecurityDefinition("Bearer", jwtSecurityScheme);
+});
 
 /*Se registra el contexto TodoListContext para la base de datos
     utilizando la cadena de conexion que se encuentra en appssetings.json.*/
@@ -24,6 +43,8 @@ builder.Services.AddDbContext<TodoListContext>(options =>
 /*Se crea un enlace entre Itasks y TaskServices para que se inyecte
     automaticamente en todos los servicios o controladores que lo implementen.*/
 builder.Services.AddScoped<ITasks, TasksServices>();
+
+builder.Services.AddScoped<JwtServices>();
 
 //Configura Serilog como el encargado de los Logs.
 builder.Host.UseSerilog((context, config) =>

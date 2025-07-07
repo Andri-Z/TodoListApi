@@ -2,9 +2,9 @@
 {
     public class Tasks
     {
-        public int id { get; set; }
-        public string title { get; set; } = string.Empty;
-        public string descripcion { get; set; } = string.Empty;
-        public string status { get; set; } = string.Empty;
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
     }
 }

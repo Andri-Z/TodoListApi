@@ -2,11 +2,11 @@
 
 namespace TodoListApi.Models.Jwt
 {
-    public class LoginResponseModel
+    public class RegisterRequestModel
     {
+        public string Name { get; set; } = string.Empty;
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
-        public string AccesToken { get; set; } = string.Empty;
-        public int ExpiresIn { get; set; }
+        public string Password { get; set; } = string.Empty;
     }
 }

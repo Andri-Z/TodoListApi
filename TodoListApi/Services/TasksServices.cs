@@ -57,11 +57,11 @@ namespace TodoListApi.Services
             {
                 var newTask = new Tasks
                 {
-                    title = task.title,
-                    descripcion = task.descripcion,
-                    status = task.status
+                    Title = task.Title,
+                    Descripcion = task.Descripcion,
+                    Status = task.Status
                 };
-                
+
                 _context.Add(newTask);
                 await _context.SaveChangesAsync();
 
@@ -96,15 +96,15 @@ namespace TodoListApi.Services
         {
             try
             {
-                var _status = StatusValid(task.status);
+                var _status = StatusValid(task.Status);
                 var newTask = await _context.Tasks.FindAsync(id);
 
                 if (_status == null || newTask == null)
                     return null;
 
-                newTask.title = task.title;
-                newTask.descripcion = task.descripcion;
-                newTask.status = _status;
+                newTask.Title = task.Title;
+                newTask.Descripcion = task.Descripcion;
+                newTask.Status = _status;
 
                 await _context.SaveChangesAsync();
 
@@ -126,7 +126,7 @@ namespace TodoListApi.Services
                 if (_status == null || task == null)
                     return null;
 
-                task.status = _status;
+                task.Status = _status;
 
                 await _context.SaveChangesAsync();
                 return task;
@@ -157,10 +157,10 @@ namespace TodoListApi.Services
 
             var response = new ApiResponse
             {
-                data = tasksPerPage,
-                page = page,
-                limit = limit,
-                total = totalTask
+                Data = tasksPerPage,
+                Page = page,
+                Limit = limit,
+                Total = totalTask
             };
 
             return response;

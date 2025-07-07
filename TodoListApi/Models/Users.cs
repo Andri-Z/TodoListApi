@@ -4,11 +4,15 @@ namespace TodoListApi.Models
 {
     public class Users
     {
-        public int id { get; set; }
-        public string name { get; set; } = string.Empty;
+        public int Id { get; set; }
+
+        public string Name { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "El Email es obligatorio.")]
-        public string email { get; set; } = string.Empty;
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
         [Required(ErrorMessage = "La contraseña no puede estar vacia.")]
-        public string password { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
     }
 }

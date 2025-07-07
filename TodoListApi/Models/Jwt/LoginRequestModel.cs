@@ -1,8 +1,14 @@
-﻿namespace TodoListApi.Models.Jwt
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TodoListApi.Models.Jwt
 {
     public class LoginRequestModel
     {
-        public string? UserName { get; set; }
-        public string? Password { get; set; }
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [MinLength(2)]
+        [MaxLength(20)]
+        public string Password { get; set; } = string.Empty;
     }
 }
