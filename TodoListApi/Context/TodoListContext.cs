@@ -10,7 +10,7 @@ namespace TodoListApi.Context
         {
 
         }
-        public DbSet<Users> Users { get; set; }
-        public DbSet<Tasks> Tasks { get; set; }
+        public DbSet<UsersModel> Users { get; set; }
+        public DbSet<TasksModel> Tasks { get; set; }
     }
 }

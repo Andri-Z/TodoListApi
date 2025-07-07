@@ -16,23 +16,29 @@ namespace TodoListApi.Controllers
 
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<ActionResult<LoginResponseModel>> Login(LoginRequestModel request)
+        public async Task<ActionResult<LoginResponseModel>> Login([FromQuery] LoginRequestModel request)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(new { mensaje = "El modelo de datos es invalido." });
+
             var result = await _jwtServices.Authenticate(request);
             if (result is null)
                 return Unauthorized();
 
-            return result;
+            return Ok(result);
         }
         [HttpPost("register")]
-        public async Task<ActionResult<LoginResponseModel?>> Register(RegisterRequestModel request)
+        public async Task<ActionResult<LoginResponseModel?>> Register([FromQuery] RegisterRequestModel request)
         {
             if (!ModelState.IsValid)
-                return BadRequest();
+                return BadRequest(new { mensaje = "El modelo de datos es invalido."});
 
             var result = await _jwtServices.RegisterUser(request);
 
-            return result;
+            if (result is null)
+                return BadRequest(new { mensaje = "Verifique los datos introducidos." });
+
+            return Ok(result);
         }
     }
 }

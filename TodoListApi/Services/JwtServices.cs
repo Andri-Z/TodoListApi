@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Azure.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -13,8 +14,9 @@ namespace TodoListApi.Services
     {
         private readonly TodoListContext _context;
         private readonly IConfiguration _configuration;
-        public JwtServices(TodoListContext context, IConfiguration configuration) =>
-        (_context, _configuration) = (context, configuration);
+        private readonly ILogger<TodoListContext> _logger;
+        public JwtServices(TodoListContext context, IConfiguration configuration,ILogger<TodoListContext> logger) =>
+        (_context, _configuration,_logger) = (context, configuration,logger);
 
         public async Task<LoginResponseModel?> Authenticate(LoginRequestModel request)
         {
@@ -53,35 +55,47 @@ namespace TodoListApi.Services
             return new LoginResponseModel
             {
                 Email = request.Email,
-                AccesToken = accesToken,
+                AccessToken = accesToken,
                 ExpiresIn = (int)tokenExpityTimeSpan.Subtract(DateTime.UtcNow).TotalSeconds
             };
         }
         public async Task<LoginResponseModel?> RegisterUser(RegisterRequestModel request)
         {
-            HashServices hash = new();
-
-            if (string.IsNullOrWhiteSpace(request.Name.Trim()) || 
-                string.IsNullOrWhiteSpace(request.Email.Trim()) || 
-                string.IsNullOrWhiteSpace(request.Password.Trim()))
-                return null;
-
-            var emailExist = await _context.Users.AnyAsync(x => x.Email == request.Email);
-            if (emailExist)
-                return null;
-
-            var passwordHashed = hash.HashPassword(request.Password);
-
-            var newUser = new Users
+            try
             {
-                Name = request.Name,
-                Email = request.Email,
-                Password = passwordHashed
-            };
-            _context.Users.Add(newUser);
-            await _context.SaveChangesAsync();
+                HashServices hash = new();
 
-            return null;   
+                if (string.IsNullOrWhiteSpace(request.Name.Trim()) ||
+                    string.IsNullOrWhiteSpace(request.Email.Trim()) ||
+                    string.IsNullOrWhiteSpace(request.Password.Trim()))
+                    return null;
+
+                var emailExist = await _context.Users.AnyAsync(x => x.Email == request.Email);
+                if (emailExist)
+                    return null;
+
+                var passwordHashed = hash.HashPassword(request.Password.Trim());
+                var newUser = new UsersModel
+                {
+                    Name = request.Name.Trim(),
+                    Email = request.Email.ToLower().Trim(),
+                    Password = passwordHashed
+                };
+
+                _context.Users.Add(newUser);
+                await _context.SaveChangesAsync();
+
+                return await Authenticate(new LoginRequestModel
+                {
+                    Email = request.Email,
+                    Password = request.Password
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error al registrar el usuario, Excepcion:{ex.Message}");
+                throw;
+            }
         }
     }
 }

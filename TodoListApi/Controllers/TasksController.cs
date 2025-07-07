@@ -17,9 +17,12 @@ namespace TodoListApi.Controllers
         public TasksController(ITasks services) =>
             (_services) = (services);
         [HttpGet]
-        public async Task<ActionResult<List<Tasks>>> GetTask(int page, int limit)
+        public async Task<ActionResult<List<TasksModel>>> GetTask([FromQuery]PaginationModel pagModel)
         {
-            var task = await _services.GetTaskAsync(page,limit);
+            if (!ModelState.IsValid)
+                return BadRequest(new { mensaje = "Tiene que ingresar valores validos." });
+
+            var task = await _services.GetTaskAsync(pagModel);
 
             if (task == null || task.Data.Count == 0)
                 return NoContent();
@@ -27,17 +30,17 @@ namespace TodoListApi.Controllers
             return Ok(task);
         }
         [HttpGet("{id}")]
-        public async Task<ActionResult<Tasks>> GetTaskById(int id)
+        public async Task<ActionResult<TasksModel>> GetTaskById(int id)
         {
-            var result = await _services.GetTasksByIdAsync(id);
+            var result = await _services.GetTaskByIdAsync(id);
 
             if (result != null)
                 return Ok(result);
             else
-                return NotFound(new { mensaje = "Esta tarea no existe." });
+                return NotFound(new { mensaje = $"La tarea con Id: {id} no existe."});
         }
         [HttpPost]
-        public async Task<ActionResult<Tasks>> CreateTask(TasksDTOs task)
+        public async Task<ActionResult<TasksModel>> CreateTask(TasksDTO task)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { mensaje = "Modelo de datos invalido." });
@@ -47,17 +50,17 @@ namespace TodoListApi.Controllers
             return CreatedAtAction(nameof(GetTaskById), new { newTask.Id }, newTask);
         }
         [HttpDelete("{id}")]
-        public async Task<ActionResult<Tasks>> DeleteTask(int id)
+        public async Task<ActionResult<TasksModel>> DeleteTask(int id)
         {
             var result = await _services.DeleteTaskAsync(id);
 
             if (!result)
-                return NotFound(new { mensaje = "La tarea no existe." });
+                return NotFound(new { mensaje = $"La tarea con Id:{id} no existe." });
 
             return Ok(new { mensaje = "Tarea eliminada satisfactoriamente." });
         }
         [HttpPut("{id}")]
-        public async Task<ActionResult<Tasks>> UpdateTask(int id, TasksDTOs task)
+        public async Task<ActionResult<TasksModel>> UpdateTask(int id, TasksDTO task)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { mensaje = "Modelo invalido." });
@@ -69,7 +72,7 @@ namespace TodoListApi.Controllers
             return Ok(result);
         }
         [HttpPatch]
-        public async Task<ActionResult<Tasks>> UpdateStatus(int id, string status)
+        public async Task<ActionResult<TasksModel>> UpdateStatus(int id, Enum status)
         {
             var result = await _services.UpdateStatusAsync(id, status);
 

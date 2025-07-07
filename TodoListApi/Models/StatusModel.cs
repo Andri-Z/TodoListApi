@@ -1,6 +1,6 @@
 ﻿namespace TodoListApi.Models
 {
-    public enum Status
+    public enum StatusModel
     {
         pendiente = 1,
         enproceso = 2,

@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Azure;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.IdentityModel.Tokens;
@@ -15,18 +17,26 @@ namespace TodoListApi.Services
     public class TasksServices : ITasks
     {
         private readonly TodoListContext _context;
-        private readonly ILogger<TodoListContext> _logger;
-        public TasksServices(TodoListContext context, ILogger<TodoListContext> logger) =>
+        private readonly ILogger<TasksServices> _logger;
+        public TasksServices(TodoListContext context, ILogger<TasksServices> logger) =>
             (_context, _logger) = (context, logger);
-        public async Task<ApiResponse> GetTaskAsync(int page, int limit)
+        public async Task<ApiResponseModel> GetTaskAsync(PaginationModel pagModel)
         {
             try
             {
-                var result = await _context.Tasks.ToListAsync();
+                var total = await _context.Tasks.CountAsync();
+                var data = await _context.Tasks
+                                   .Skip((pagModel.Page - 1) * pagModel.Limit)
+                                   .Take(pagModel.Limit)
+                                   .ToListAsync();
 
-                var tasksPerPage = Response(page,limit,result);
-
-                return tasksPerPage;
+                return new ApiResponseModel
+                {
+                    Data = data,
+                    Page = pagModel.Page,
+                    Limit = pagModel.Limit,
+                    Total = total
+                };
             }
             catch (Exception ex)
             {
@@ -34,7 +44,7 @@ namespace TodoListApi.Services
                 throw;
             }
         }
-        public async Task<Tasks?> GetTasksByIdAsync(int id)
+        public async Task<TasksModel?> GetTaskByIdAsync(int id)
         {
             try
             {
@@ -51,14 +61,19 @@ namespace TodoListApi.Services
                 throw;
             }
         }
-        public async Task<Tasks> CreateTaskAsync(TasksDTOs task)
+        public async Task<TasksModel?> CreateTaskAsync(TasksDTO task)
         {
             try 
             {
-                var newTask = new Tasks
+                //var _status = StatusValid(task.Status);
+                //if (_status is null)
+                //    return null;
+
+
+                var newTask = new TasksModel
                 {
                     Title = task.Title,
-                    Descripcion = task.Descripcion,
+                    Description = task.Description,
                     Status = task.Status
                 };
 
@@ -77,7 +92,7 @@ namespace TodoListApi.Services
         {
             try
             {
-                var task = await GetTasksByIdAsync(id);
+                var task = await GetTaskByIdAsync(id);
                 if(task == null)
                     return false;
 
@@ -92,19 +107,19 @@ namespace TodoListApi.Services
                 throw;
             }
         }
-        public async Task<Tasks?> UpdateTaskAsync(int id, TasksDTOs task)
+        public async Task<TasksModel?> UpdateTaskAsync(int id, TasksDTO task)
         {
             try
             {
-                var _status = StatusValid(task.Status);
+                //var _status = StatusValid(task.Status);
                 var newTask = await _context.Tasks.FindAsync(id);
 
-                if (_status == null || newTask == null)
+                if (newTask == null)
                     return null;
 
                 newTask.Title = task.Title;
-                newTask.Descripcion = task.Descripcion;
-                newTask.Status = _status;
+                newTask.Description = task.Description;
+                newTask.Status = task.Status;
 
                 await _context.SaveChangesAsync();
 
@@ -116,17 +131,17 @@ namespace TodoListApi.Services
                 throw;
             }
         }
-        public async Task<Tasks?> UpdateStatusAsync(int id, string status)
+        public async Task<TasksModel?> UpdateStatusAsync(int id, Enum status)
         {
             try
             {
-                var _status = StatusValid(status);
+                //var _status = StatusValid(status);
                 var task = await _context.Tasks.FindAsync(id);
 
-                if (_status == null || task == null)
+                if (task == null)
                     return null;
 
-                task.Status = _status;
+                //task.Status = _status.Value;
 
                 await _context.SaveChangesAsync();
                 return task;
@@ -136,34 +151,6 @@ namespace TodoListApi.Services
                 _logger.LogError($"Ha ocurrido un error actualizando el estado de la tarea con el id:{id}.\n Excepcion: {ex.Message}");
                 throw;
             }
-        }
-        public string? StatusValid(string status)
-        {
-            var _status = status.ToLower().Replace(" ", "");
-
-            if (!Enum.TryParse<Status>(_status, true, out var parsedStatus))
-                return null;
-
-            return _status;
-        }
-        public ApiResponse Response(int page, int limit, List<Tasks> tasks)
-        { 
-            var totalTask = tasks.Count;
-            var totalPages = (int)Math.Ceiling((decimal)totalTask / limit);
-            var tasksPerPage = tasks
-                .Skip((page - 1) * limit)
-                .Take(limit)
-                .ToList();
-
-            var response = new ApiResponse
-            {
-                Data = tasksPerPage,
-                Page = page,
-                Limit = limit,
-                Total = totalTask
-            };
-
-            return response;
         }
     }
 }

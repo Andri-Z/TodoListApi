@@ -11,10 +11,15 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Cryptography.Xml;
 using Microsoft.OpenApi.Models;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+                .AddJsonOptions(options => 
+                { 
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -33,6 +38,10 @@ builder.Services.AddSwaggerGen(options =>
         }
     };
     options.AddSecurityDefinition("Bearer", jwtSecurityScheme);
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {jwtSecurityScheme ,Array.Empty<string>() }
+    });
 });
 
 /*Se registra el contexto TodoListContext para la base de datos
@@ -79,7 +88,6 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true
     };
 });
-builder.Services.AddAuthentication();
 
 var app = builder.Build();
 

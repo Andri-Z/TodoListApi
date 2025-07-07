@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Azure.Core;
+using System.ComponentModel.DataAnnotations;
 
 namespace TodoListApi.Models.Jwt
 {
@@ -6,7 +7,7 @@ namespace TodoListApi.Models.Jwt
     {
         [EmailAddress]
         public string Email { get; set; } = string.Empty;
-        public string AccesToken { get; set; } = string.Empty;
+        public string AccessToken { get; set; } = string.Empty;
         public int ExpiresIn { get; set; }
     }
 }

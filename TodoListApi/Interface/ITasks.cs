@@ -5,11 +5,11 @@ namespace TodoListApi.Interface
 {
     public interface ITasks
     {
-        Task<ApiResponse> GetTaskAsync(int page, int limit);
-        Task<Tasks?> GetTasksByIdAsync(int id);
-        Task<Tasks> CreateTaskAsync(TasksDTOs task);
-        Task<Tasks?> UpdateTaskAsync(int id, TasksDTOs task);
+        Task<ApiResponseModel> GetTaskAsync(PaginationModel pagModel);
+        Task<TasksModel?> GetTaskByIdAsync(int id);
+        Task<TasksModel?> CreateTaskAsync(TasksDTO task);
+        Task<TasksModel?> UpdateTaskAsync(int id, TasksDTO task);
         Task<bool> DeleteTaskAsync(int id);
-        Task<Tasks?> UpdateStatusAsync(int id, string status);
+        Task<TasksModel?> UpdateStatusAsync(int id, Enum status);
     }
 }
