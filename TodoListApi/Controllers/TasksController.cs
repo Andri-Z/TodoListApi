@@ -32,6 +32,9 @@ namespace TodoListApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<TasksModel>> GetTaskById(int id)
         {
+            if (id < 1)
+                return BadRequest(new { mensaje = "Entrada no valida."});
+
             var result = await _services.GetTaskByIdAsync(id);
 
             if (result is not null)
@@ -48,19 +51,22 @@ namespace TodoListApi.Controllers
             var newTask = await _services.CreateTaskAsync(task);
 
             if (newTask is null)
-                return BadRequest();
+                return BadRequest(new {mensaje ="El status no es valido."});
 
             return CreatedAtAction(nameof(GetTaskById), new { newTask.Id }, newTask);
         }
         [HttpDelete("{id}")]
-        public async Task<ActionResult<TasksModel>> DeleteTask(int id)
+        public async Task<ActionResult> DeleteTask(string id)
         {
-            var result = await _services.DeleteTaskAsync(id);
+            if(!int.TryParse(id,out int _id))
+                return BadRequest(new {mensaje = "El id ingresado no es valido." });
+
+            var result = await _services.DeleteTaskAsync(_id);
 
             if (!result)
-                return NotFound(new { mensaje = $"La tarea con Id:{id} no existe." });
+                return NotFound(new {mensaje = $"La tarea con Id:{id} no existe." });
 
-            return Ok(new { mensaje = "Tarea eliminada satisfactoriamente." });
+            return NoContent();
         }
         [HttpPut("{id}")]
         public async Task<ActionResult<TasksModel>> UpdateTask(int id, TasksDTO task)
@@ -75,12 +81,12 @@ namespace TodoListApi.Controllers
             return Ok(result);
         }
         [HttpPatch]
-        public async Task<ActionResult<TasksModel>> UpdateStatus(int id, Enum status)
+        public async Task<ActionResult<TasksModel>> UpdateStatus(int id, string status)
         {
             var result = await _services.UpdateStatusAsync(id, status);
 
             if (result is null)
-                return NotFound(new { mensaje = "Verifique que los datos ingresados sean correctos." });
+                return BadRequest(new { mensaje = "Verifique que los datos ingresados sean correctos." });
 
             return Ok(result);
         }

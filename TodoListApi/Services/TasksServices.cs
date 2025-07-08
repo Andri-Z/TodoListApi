@@ -130,7 +130,7 @@ namespace TodoListApi.Services
                 throw;
             }
         }
-        public async Task<TasksModel?> UpdateStatusAsync(int id, Enum status)
+        public async Task<TasksModel?> UpdateStatusAsync(int id, string status)
         {
             try
             {

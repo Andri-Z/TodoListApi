@@ -10,6 +10,6 @@ namespace TodoListApi.Interface
         Task<TasksModel?> CreateTaskAsync(TasksDTO task);
         Task<TasksModel?> UpdateTaskAsync(int id, TasksDTO task);
         Task<bool> DeleteTaskAsync(int id);
-        Task<TasksModel?> UpdateStatusAsync(int id, Enum status);
+        Task<TasksModel?> UpdateStatusAsync(int id, string status);
     }
 }
