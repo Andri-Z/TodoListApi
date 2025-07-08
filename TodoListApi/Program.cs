@@ -101,7 +101,7 @@ app.UseExceptionHandler(errorApp =>
 
         await context.Response.WriteAsJsonAsync(new
         {
-            mensaje = "Ha ocurrido un error inesperado  ."
+            mensaje = "Ha ocurrido un error inesperado."
         });
     });
 });

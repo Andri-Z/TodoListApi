@@ -12,6 +12,6 @@ namespace TodoListApi.DTOs
         [MinLength(2)]
         public string Description { get; set; } = string.Empty;
         [Required]
-        public StatusModel Status { get; set; }
+        public string Status { get; set; } = string.Empty;
     }
 }

@@ -55,7 +55,7 @@ namespace TodoListApi.Services
 
                 return task;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"Ha ocurrido un error al consultar tarea con id:{id}.\n Excepcion: {ex.Message}");
                 throw;
@@ -63,18 +63,17 @@ namespace TodoListApi.Services
         }
         public async Task<TasksModel?> CreateTaskAsync(TasksDTO task)
         {
-            try 
+            try
             {
-                //var _status = StatusValid(task.Status);
-                //if (_status is null)
-                //    return null;
-
+                var _status = ParseStatus(task.Status.ToString());
+                if (_status is null)
+                    return null;
 
                 var newTask = new TasksModel
                 {
                     Title = task.Title,
                     Description = task.Description,
-                    Status = task.Status
+                    Status = _status.Value
                 };
 
                 _context.Add(newTask);
@@ -82,7 +81,7 @@ namespace TodoListApi.Services
 
                 return newTask;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"Ha ocurrido un error al crear la tarea:{task}.\n Excepcion:{ex.Message}");
                 throw;
@@ -93,7 +92,7 @@ namespace TodoListApi.Services
             try
             {
                 var task = await GetTaskByIdAsync(id);
-                if(task == null)
+                if (task == null)
                     return false;
 
                 _context.Tasks.Remove(task);
@@ -101,7 +100,7 @@ namespace TodoListApi.Services
 
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"Ha ocurrido un error eliminando la tarea:{id}.\n Excepcion: {ex.Message}");
                 throw;
@@ -111,15 +110,15 @@ namespace TodoListApi.Services
         {
             try
             {
-                //var _status = StatusValid(task.Status);
                 var newTask = await _context.Tasks.FindAsync(id);
+                var _status = ParseStatus(task.Status.ToString());
 
-                if (newTask == null)
+                if (newTask is null || _status is null)
                     return null;
 
                 newTask.Title = task.Title;
                 newTask.Description = task.Description;
-                newTask.Status = task.Status;
+                newTask.Status = _status.Value;
 
                 await _context.SaveChangesAsync();
 
@@ -135,13 +134,13 @@ namespace TodoListApi.Services
         {
             try
             {
-                //var _status = StatusValid(status);
+                var _status = ParseStatus(status.ToString());
                 var task = await _context.Tasks.FindAsync(id);
 
-                if (task == null)
+                if (task is null || _status is null)
                     return null;
 
-                //task.Status = _status.Value;
+                task.Status = _status.Value;
 
                 await _context.SaveChangesAsync();
                 return task;
@@ -151,6 +150,21 @@ namespace TodoListApi.Services
                 _logger.LogError($"Ha ocurrido un error actualizando el estado de la tarea con el id:{id}.\n Excepcion: {ex.Message}");
                 throw;
             }
+        }
+        public static StatusModel? ParseStatus(string status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+                return null;
+
+            var _status = status.ToLower().Replace(" ", "").Trim();
+
+            return _status switch
+            {
+                "pendiente" => StatusModel.pendiente,
+                "enproceso" => StatusModel.enproceso,
+                "completada" => StatusModel.completada,
+                _ => null
+            };
         }
     }
 }

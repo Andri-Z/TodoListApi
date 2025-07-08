@@ -24,7 +24,7 @@ namespace TodoListApi.Controllers
 
             var task = await _services.GetTaskAsync(pagModel);
 
-            if (task == null || task.Data.Count == 0)
+            if (task is null || task.Data.Count is 0)
                 return NoContent();
 
             return Ok(task);
@@ -34,7 +34,7 @@ namespace TodoListApi.Controllers
         {
             var result = await _services.GetTaskByIdAsync(id);
 
-            if (result != null)
+            if (result is not null)
                 return Ok(result);
             else
                 return NotFound(new { mensaje = $"La tarea con Id: {id} no existe."});
@@ -46,7 +46,10 @@ namespace TodoListApi.Controllers
                 return BadRequest(new { mensaje = "Modelo de datos invalido." });
             
             var newTask = await _services.CreateTaskAsync(task);
-            
+
+            if (newTask is null)
+                return BadRequest();
+
             return CreatedAtAction(nameof(GetTaskById), new { newTask.Id }, newTask);
         }
         [HttpDelete("{id}")]
@@ -66,7 +69,7 @@ namespace TodoListApi.Controllers
                 return BadRequest(new { mensaje = "Modelo invalido." });
 
             var result = await _services.UpdateTaskAsync(id, task);
-            if (result == null)
+            if (result is null)
                 return NotFound(new { mensaje = "Verifique que los datos ingresados sean correctos." });
             
             return Ok(result);
@@ -76,7 +79,7 @@ namespace TodoListApi.Controllers
         {
             var result = await _services.UpdateStatusAsync(id, status);
 
-            if (result == null)
+            if (result is null)
                 return NotFound(new { mensaje = "Verifique que los datos ingresados sean correctos." });
 
             return Ok(result);

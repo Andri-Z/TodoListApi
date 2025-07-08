@@ -11,7 +11,7 @@ namespace TodoListApi.Controllers
     public class UsersController : ControllerBase
     {
         private readonly JwtServices _jwtServices;
-        public UsersController(TodoListContext context,JwtServices jwtServices) =>
+        public UsersController(JwtServices jwtServices) =>
             (_jwtServices) = (jwtServices);
 
         [AllowAnonymous]
@@ -36,7 +36,7 @@ namespace TodoListApi.Controllers
             var result = await _jwtServices.RegisterUser(request);
 
             if (result is null)
-                return BadRequest(new { mensaje = "Verifique los datos introducidos." });
+                return BadRequest(new { mensaje = "Ingrese datos validos." });
 
             return Ok(result);
         }
