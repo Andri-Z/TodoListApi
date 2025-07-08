@@ -46,7 +46,7 @@ Esta es una API RESTful creada para la gestion de tareas, desarrollada con ASP .
 - Para obtener todas las tareas, es fundamental ingresar los parametros `page` y `limit`.
 - Si ocurre un error inesperado se mostrara un mensaje personalizado.
 - En el archivo appsettings.json se encuentra la configuracion de JWT, los campos Issuer, Audience y Key estaran vacios, por lo que hay que rellenarlos con la informacion correspondiente:
-- 
+
 ```json
 "JwtConfig": {
   "Issuer": "",
